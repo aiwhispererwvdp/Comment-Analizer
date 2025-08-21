@@ -4,6 +4,7 @@ numpy>=1.24.0
 streamlit>=1.28.0
 plotly>=5.17.0
 matplotlib>=3.7.0
+seaborn>=0.12.0
 
 # API Clients
 openai>=1.3.0
@@ -12,19 +13,33 @@ openai>=1.3.0
 openpyxl>=3.1.0
 xlsxwriter>=3.1.0
 python-dotenv>=1.0.0
+scikit-learn>=1.3.0
+scipy>=1.11.0
 
-# Language Processing
+# Natural Language Processing
 langdetect>=1.0.9
 nltk>=3.8.0
+textblob>=0.17.0
+wordcloud>=1.9.0
 
 # Utilities
 requests>=2.31.0
 tqdm>=4.66.0
 python-dateutil>=2.8.0
+psutil>=5.9.0
+Pillow>=10.0.0
+cryptography>=41.0.0
+
+# String Matching (for duplicate detection)
+# Note: difflib2 doesn't exist - using fuzzywuzzy and python-Levenshtein instead
+fuzzywuzzy>=0.18.0
+python-Levenshtein>=0.21.0
 
 # Testing
 pytest>=7.4.0
 pytest-cov>=4.1.0
+pytest-xdist>=3.0.0
+hypothesis>=6.82.0
 
 # Development
 black>=23.9.0

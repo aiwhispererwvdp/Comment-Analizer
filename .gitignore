@@ -62,8 +62,12 @@ outputs/reports/*
 outputs/visualizations/*
 !outputs/visualizations/.gitkeep
 *.log
+# Environment variables
 .env
 .env.local
+.env.*.local
+*.env
+!.env.example
 
 # Streamlit
 .streamlit/secrets.toml

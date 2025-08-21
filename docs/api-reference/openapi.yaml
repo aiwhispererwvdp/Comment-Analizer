@@ -1,0 +1,1093 @@
+openapi: 3.0.3
+info:
+  title: Personal Paraguay Fiber Comments Analysis API
+  description: |
+    API for analyzing customer comments and feedback for Paraguay fiber optic services.
+    
+    This API provides comprehensive sentiment analysis, emotion detection, theme extraction,
+    and business intelligence capabilities for customer feedback data.
+    
+    ## Features
+    - **Sentiment Analysis**: Basic and AI-powered sentiment detection
+    - **Emotion Analysis**: Detailed emotion recognition
+    - **Theme Extraction**: Automatic topic identification
+    - **Multi-language Support**: Spanish, English, and Guaraní
+    - **Batch Processing**: Efficient handling of large datasets
+    - **Export Capabilities**: Multiple export formats (Excel, CSV, PDF)
+    
+    ## Rate Limits
+    - Free tier: 100 requests/hour
+    - Standard tier: 1,000 requests/hour
+    - Premium tier: 10,000 requests/hour
+    
+  version: 2.0.0
+  contact:
+    name: API Support
+    email: support@paraguay-fiber-analysis.com
+    url: https://paraguay-fiber-analysis.com/support
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: https://paraguay-fiber-analysis.com/terms
+
+servers:
+  - url: https://api.paraguay-fiber-analysis.com/v1
+    description: Production server
+  - url: https://staging-api.paraguay-fiber-analysis.com/v1
+    description: Staging server
+  - url: http://localhost:8501/api/v1
+    description: Local development server
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /health:
+    get:
+      tags:
+        - System
+      summary: Health check
+      description: Check if the API is operational
+      operationId: healthCheck
+      security: []
+      responses:
+        '200':
+          description: System is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: "healthy"
+                timestamp: "2024-01-15T10:30:00Z"
+                services:
+                  api: "operational"
+                  database: "operational"
+                  openai: "operational"
+                  cache: "operational"
+                version: "2.0.0"
+
+  /status:
+    get:
+      tags:
+        - System
+      summary: System status
+      description: Get detailed system status and metrics
+      operationId: getStatus
+      responses:
+        '200':
+          description: System status information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusResponse'
+
+  /metrics:
+    get:
+      tags:
+        - System
+      summary: Usage metrics
+      description: Get usage metrics and statistics
+      operationId: getMetrics
+      parameters:
+        - name: period
+          in: query
+          description: Time period for metrics
+          schema:
+            type: string
+            enum: [hour, day, week, month]
+            default: day
+        - name: metric_type
+          in: query
+          description: Type of metrics to retrieve
+          schema:
+            type: string
+            enum: [usage, performance, errors]
+            default: usage
+      responses:
+        '200':
+          description: Usage metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsResponse'
+
+  /analyze:
+    post:
+      tags:
+        - Analysis
+      summary: Analyze comments
+      description: |
+        Perform comprehensive analysis on a batch of comments.
+        
+        Supports multiple analysis types including sentiment, emotion, and theme detection.
+        Results are processed asynchronously for large datasets.
+      operationId: analyzeComments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalysisRequest'
+            examples:
+              basic_analysis:
+                summary: Basic sentiment analysis
+                value:
+                  comments:
+                    - text: "Excelente servicio de fibra óptica"
+                      id: "comment_001"
+                      metadata:
+                        customer_id: "C123"
+                        location: "Asunción"
+                  analysis_types: ["sentiment"]
+                  options:
+                    batch_size: 100
+              comprehensive_analysis:
+                summary: Comprehensive analysis
+                value:
+                  comments:
+                    - text: "El servicio es bueno pero a veces falla"
+                      id: "comment_002"
+                  analysis_types: ["sentiment", "emotion", "theme"]
+                  options:
+                    confidence_threshold: 0.8
+                    remove_duplicates: true
+      responses:
+        '200':
+          description: Analysis completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisResult'
+              examples:
+                success_response:
+                  summary: Successful analysis
+                  value:
+                    analysis_id: "a123-b456-c789"
+                    status: "completed"
+                    timestamp: "2024-01-15T10:30:00Z"
+                    results:
+                      sentiment:
+                        positive: 0.85
+                        neutral: 0.10
+                        negative: 0.05
+                        confidence: 0.92
+                    metadata:
+                      processing_time_ms: 1250
+                      tokens_used: 450
+                      cost_usd: 0.0012
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '413':
+          $ref: '#/components/responses/PayloadTooLarge'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /sentiment/basic:
+    post:
+      tags:
+        - Analysis
+      summary: Basic sentiment analysis
+      description: Rule-based sentiment analysis without AI
+      operationId: basicSentiment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TextAnalysisRequest'
+      responses:
+        '200':
+          description: Sentiment analysis result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SentimentResult'
+
+  /sentiment/advanced:
+    post:
+      tags:
+        - Analysis
+      summary: Advanced sentiment analysis
+      description: AI-powered sentiment analysis with detailed insights
+      operationId: advancedSentiment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdvancedSentimentRequest'
+      responses:
+        '200':
+          description: Advanced sentiment analysis result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdvancedSentimentResult'
+
+  /sentiment/batch:
+    post:
+      tags:
+        - Analysis
+      summary: Batch sentiment analysis
+      description: Process multiple comments for sentiment analysis
+      operationId: batchSentiment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchSentimentRequest'
+      responses:
+        '202':
+          description: Batch processing started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchJobResponse'
+
+  /themes/extract:
+    post:
+      tags:
+        - Analysis
+      summary: Extract themes
+      description: Extract themes and topics from comments
+      operationId: extractThemes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ThemeExtractionRequest'
+      responses:
+        '200':
+          description: Theme extraction results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThemeResult'
+
+  /themes/analyze:
+    post:
+      tags:
+        - Analysis
+      summary: Analyze themes
+      description: Detailed analysis of specific themes
+      operationId: analyzeThemes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ThemeAnalysisRequest'
+      responses:
+        '200':
+          description: Theme analysis results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThemeAnalysisResult'
+
+  /upload:
+    post:
+      tags:
+        - Data
+      summary: Upload file
+      description: Upload a file for batch analysis
+      operationId: uploadFile
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: File to upload (Excel, CSV, JSON, TXT)
+                type:
+                  type: string
+                  enum: [excel, csv, json, txt]
+                  description: File type
+                encoding:
+                  type: string
+                  enum: [utf-8, latin-1, auto]
+                  default: auto
+                  description: File encoding
+              required:
+                - file
+                - type
+      responses:
+        '201':
+          description: File uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileUploadResponse'
+
+  /export/{analysis_id}:
+    get:
+      tags:
+        - Export
+      summary: Export analysis results
+      description: Export analysis results in various formats
+      operationId: exportResults
+      parameters:
+        - name: analysis_id
+          in: path
+          required: true
+          description: Analysis ID to export
+          schema:
+            type: string
+            format: uuid
+        - name: format
+          in: query
+          description: Export format
+          schema:
+            type: string
+            enum: [excel, csv, pdf, json]
+            default: excel
+        - name: include
+          in: query
+          description: What to include in export
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [summary, detailed, visualizations]
+            default: [summary, detailed]
+      responses:
+        '200':
+          description: Export file or download URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExportResponse'
+            application/vnd.ms-excel:
+              schema:
+                type: string
+                format: binary
+            text/csv:
+              schema:
+                type: string
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: |
+        API key for authentication. Get your API key from the dashboard.
+        
+        Example: `X-API-Key: sk-your-api-key-here`
+
+  schemas:
+    Comment:
+      type: object
+      required:
+        - text
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the comment
+          example: "comment_001"
+        text:
+          type: string
+          minLength: 1
+          maxLength: 5000
+          description: The comment text to analyze
+          example: "Excelente servicio de fibra óptica"
+        date:
+          type: string
+          format: date-time
+          description: When the comment was created
+          example: "2024-01-15T10:30:00Z"
+        language:
+          type: string
+          enum: [es, en, gn, auto]
+          default: auto
+          description: Language of the comment
+        metadata:
+          type: object
+          description: Additional comment metadata
+          properties:
+            customer_id:
+              type: string
+            location:
+              type: string
+            service_type:
+              type: string
+            rating:
+              type: number
+              minimum: 1
+              maximum: 5
+
+    AnalysisRequest:
+      type: object
+      required:
+        - comments
+      properties:
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+          minItems: 1
+          maxItems: 10000
+          description: Comments to analyze
+        analysis_types:
+          type: array
+          items:
+            type: string
+            enum: [sentiment, emotion, theme, duplicate, priority]
+          default: [sentiment]
+          description: Types of analysis to perform
+        options:
+          $ref: '#/components/schemas/AnalysisOptions'
+
+    AnalysisOptions:
+      type: object
+      properties:
+        batch_size:
+          type: integer
+          minimum: 1
+          maximum: 1000
+          default: 100
+          description: Number of comments to process per batch
+        parallel:
+          type: boolean
+          default: true
+          description: Enable parallel processing
+        confidence_threshold:
+          type: number
+          minimum: 0
+          maximum: 1
+          default: 0.7
+          description: Minimum confidence threshold for results
+        remove_duplicates:
+          type: boolean
+          default: true
+          description: Remove duplicate comments
+        duplicate_threshold:
+          type: number
+          minimum: 0
+          maximum: 1
+          default: 0.95
+          description: Similarity threshold for duplicate detection
+
+    AnalysisResult:
+      type: object
+      properties:
+        analysis_id:
+          type: string
+          format: uuid
+          description: Unique analysis identifier
+        timestamp:
+          type: string
+          format: date-time
+          description: When analysis was completed
+        status:
+          type: string
+          enum: [pending, processing, completed, failed]
+          description: Analysis status
+        summary:
+          $ref: '#/components/schemas/AnalysisSummary'
+        results:
+          type: object
+          properties:
+            sentiment:
+              $ref: '#/components/schemas/SentimentResult'
+            emotion:
+              $ref: '#/components/schemas/EmotionResult'
+            themes:
+              $ref: '#/components/schemas/ThemeResult'
+        metadata:
+          $ref: '#/components/schemas/AnalysisMetadata'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorDetail'
+
+    SentimentResult:
+      type: object
+      properties:
+        sentiment:
+          type: string
+          enum: [positive, negative, neutral, mixed]
+          description: Overall sentiment classification
+        scores:
+          type: object
+          properties:
+            positive:
+              type: number
+              minimum: 0
+              maximum: 1
+            negative:
+              type: number
+              minimum: 0
+              maximum: 1
+            neutral:
+              type: number
+              minimum: 0
+              maximum: 1
+          description: Sentiment probability scores
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Confidence in the sentiment classification
+        aspects:
+          type: array
+          items:
+            type: object
+            properties:
+              aspect:
+                type: string
+              sentiment:
+                type: string
+              score:
+                type: number
+          description: Aspect-based sentiment analysis
+        explanation:
+          type: string
+          description: Human-readable explanation of the sentiment
+
+    EmotionResult:
+      type: object
+      properties:
+        emotions:
+          type: object
+          properties:
+            joy:
+              type: number
+              minimum: 0
+              maximum: 1
+            anger:
+              type: number
+              minimum: 0
+              maximum: 1
+            sadness:
+              type: number
+              minimum: 0
+              maximum: 1
+            fear:
+              type: number
+              minimum: 0
+              maximum: 1
+            surprise:
+              type: number
+              minimum: 0
+              maximum: 1
+            disgust:
+              type: number
+              minimum: 0
+              maximum: 1
+          description: Emotion intensity scores (0-1)
+        dominant_emotion:
+          type: string
+          description: The strongest detected emotion
+        intensity:
+          type: string
+          enum: [very_low, low, moderate, high, very_high]
+          description: Overall emotional intensity
+
+    ThemeResult:
+      type: object
+      properties:
+        themes:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+              category:
+                type: string
+              frequency:
+                type: integer
+              percentage:
+                type: number
+              keywords:
+                type: array
+                items:
+                  type: string
+              sentiment:
+                type: string
+              importance:
+                type: number
+              examples:
+                type: array
+                items:
+                  type: string
+                maxItems: 3
+
+    AnalysisSummary:
+      type: object
+      properties:
+        total_comments:
+          type: integer
+        sentiment_distribution:
+          type: object
+          properties:
+            positive:
+              type: number
+            negative:
+              type: number
+            neutral:
+              type: number
+        top_themes:
+          type: array
+          items:
+            type: string
+        average_score:
+          type: number
+        confidence_score:
+          type: number
+
+    AnalysisMetadata:
+      type: object
+      properties:
+        processing_time_ms:
+          type: integer
+        tokens_used:
+          type: integer
+        cost_usd:
+          type: number
+        api_calls:
+          type: integer
+        cache_hits:
+          type: integer
+        batch_count:
+          type: integer
+
+    TextAnalysisRequest:
+      type: object
+      required:
+        - text
+      properties:
+        text:
+          type: string
+          maxLength: 5000
+          description: Text to analyze
+        language:
+          type: string
+          enum: [es, en, gn, auto]
+          default: auto
+
+    AdvancedSentimentRequest:
+      allOf:
+        - $ref: '#/components/schemas/TextAnalysisRequest'
+        - type: object
+          properties:
+            context:
+              type: string
+              description: Context for sentiment analysis
+              example: "customer_feedback"
+            detailed:
+              type: boolean
+              default: false
+              description: Include detailed analysis
+
+    AdvancedSentimentResult:
+      allOf:
+        - $ref: '#/components/schemas/SentimentResult'
+        - type: object
+          properties:
+            context_analysis:
+              type: object
+              description: Context-specific analysis
+            reasoning:
+              type: string
+              description: Detailed reasoning for sentiment classification
+
+    BatchSentimentRequest:
+      type: object
+      required:
+        - comments
+      properties:
+        comments:
+          type: array
+          items:
+            type: string
+          maxItems: 1000
+          description: Array of comment texts
+        parallel:
+          type: boolean
+          default: true
+          description: Process in parallel
+        max_batch_size:
+          type: integer
+          default: 100
+          minimum: 1
+          maximum: 1000
+
+    BatchJobResponse:
+      type: object
+      properties:
+        batch_id:
+          type: string
+          description: Unique batch job identifier
+        status:
+          type: string
+          enum: [queued, processing, completed, failed]
+        total:
+          type: integer
+          description: Total number of items to process
+        processed:
+          type: integer
+          description: Number of items processed
+        eta_seconds:
+          type: integer
+          description: Estimated time to completion
+        progress_url:
+          type: string
+          description: URL to check progress
+
+    ThemeExtractionRequest:
+      type: object
+      required:
+        - comments
+      properties:
+        comments:
+          type: array
+          items:
+            type: string
+          description: Comments to extract themes from
+        min_frequency:
+          type: integer
+          default: 2
+          minimum: 1
+          description: Minimum frequency for theme inclusion
+        max_themes:
+          type: integer
+          default: 10
+          minimum: 1
+          maximum: 50
+          description: Maximum number of themes to extract
+        language:
+          type: string
+          enum: [es, en, gn, auto]
+          default: auto
+
+    ThemeAnalysisRequest:
+      type: object
+      required:
+        - theme_id
+      properties:
+        theme_id:
+          type: string
+          description: Theme to analyze
+        date_range:
+          type: object
+          properties:
+            start:
+              type: string
+              format: date
+            end:
+              type: string
+              format: date
+        include_trends:
+          type: boolean
+          default: true
+        include_correlations:
+          type: boolean
+          default: true
+
+    ThemeAnalysisResult:
+      type: object
+      properties:
+        theme:
+          type: string
+        trend:
+          type: string
+          enum: [improving, declining, stable, volatile]
+        sentiment_over_time:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              sentiment:
+                type: number
+        related_themes:
+          type: array
+          items:
+            type: string
+        recommendations:
+          type: array
+          items:
+            type: string
+
+    FileUploadResponse:
+      type: object
+      properties:
+        file_id:
+          type: string
+          description: Unique file identifier
+        filename:
+          type: string
+          description: Original filename
+        size_bytes:
+          type: integer
+          description: File size in bytes
+        rows_detected:
+          type: integer
+          description: Number of rows detected
+        status:
+          type: string
+          enum: [uploaded, processing, ready_for_analysis, failed]
+        columns:
+          type: array
+          items:
+            type: string
+          description: Detected column names
+        preview:
+          type: array
+          items:
+            type: object
+          description: Preview of first few rows
+
+    ExportResponse:
+      type: object
+      properties:
+        export_url:
+          type: string
+          format: uri
+          description: URL to download the export file
+        expires_at:
+          type: string
+          format: date-time
+          description: When the download URL expires
+        size_bytes:
+          type: integer
+          description: Size of the export file
+        format:
+          type: string
+          description: Export format used
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        services:
+          type: object
+          additionalProperties:
+            type: string
+            enum: [operational, degraded, down]
+        version:
+          type: string
+
+    StatusResponse:
+      type: object
+      properties:
+        uptime_seconds:
+          type: integer
+        requests_today:
+          type: integer
+        active_sessions:
+          type: integer
+        queue_length:
+          type: integer
+        average_response_time_ms:
+          type: number
+        error_rate:
+          type: number
+
+    MetricsResponse:
+      type: object
+      properties:
+        period:
+          type: string
+        metrics:
+          type: object
+          properties:
+            total_requests:
+              type: integer
+            unique_users:
+              type: integer
+            total_comments_processed:
+              type: integer
+            api_calls:
+              type: object
+              additionalProperties:
+                type: integer
+            costs:
+              type: object
+              additionalProperties:
+                type: number
+            performance:
+              type: object
+              properties:
+                avg_response_ms:
+                  type: number
+                p95_response_ms:
+                  type: number
+                p99_response_ms:
+                  type: number
+
+    ErrorDetail:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          oneOf:
+            - type: string
+            - type: integer
+          description: Error code
+        name:
+          type: string
+          description: Error name
+        message:
+          type: string
+          description: Human-readable error message
+        field:
+          type: string
+          description: Field that caused the error
+        details:
+          type: object
+          description: Additional error details
+        timestamp:
+          type: string
+          format: date-time
+        trace_id:
+          type: string
+          description: Request trace ID for debugging
+        documentation_url:
+          type: string
+          format: uri
+          description: Link to relevant documentation
+
+    Error:
+      type: object
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorDetail'
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: "BAD_REQUEST"
+              message: "Invalid request format"
+              details:
+                field: "comments"
+                requirement: "array of comment objects"
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: "UNAUTHORIZED"
+              message: "Invalid or missing API key"
+
+    PayloadTooLarge:
+      description: Payload too large
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: "PAYLOAD_TOO_LARGE"
+              message: "Request payload exceeds maximum size"
+
+    RateLimitExceeded:
+      description: Rate limit exceeded
+      headers:
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+          description: Request limit per time window
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+          description: Remaining requests in current window
+        X-RateLimit-Reset:
+          schema:
+            type: integer
+          description: Unix timestamp when rate limit resets
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds to wait before retry
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: "RATE_LIMIT_EXCEEDED"
+              message: "Too many requests"
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: "INTERNAL_SERVER_ERROR"
+              message: "An unexpected error occurred"
+
+  examples:
+    SimpleComment:
+      summary: Simple comment
+      value:
+        text: "Excelente servicio"
+        language: "es"
+
+    CommentWithMetadata:
+      summary: Comment with metadata
+      value:
+        id: "comment_123"
+        text: "El servicio de internet es muy rápido"
+        date: "2024-01-15T10:30:00Z"
+        language: "es"
+        metadata:
+          customer_id: "C456"
+          location: "Asunción"
+          rating: 5
+
+tags:
+  - name: System
+    description: System health and status endpoints
+  - name: Analysis
+    description: Comment analysis operations
+  - name: Data
+    description: Data upload and management
+  - name: Export
+    description: Export and reporting operations
+
+externalDocs:
+  description: Complete API Documentation
+  url: https://docs.paraguay-fiber-analysis.com

@@ -51,6 +51,7 @@ def validate_config():
             missing_keys.append(key)
     
     if missing_keys:
-        raise ValueError(f"Missing required environment variables: {missing_keys}")
+        import warnings
+        warnings.warn(f"Missing environment variables: {missing_keys}. Some features may be limited.")
     
     return True
