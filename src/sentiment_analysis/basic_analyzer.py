@@ -38,6 +38,19 @@ class BasicAnalysisMethod(AnalysisMethod):
             'gn': ['vai', 'ivai', 'mba\'evai', 'ndavy\'ai']
         }
     
+    def analyze(self, comments: List[str], **kwargs) -> List[Dict]:
+        """
+        Analyze comments (wrapper for analyze_batch to match test expectations)
+        
+        Args:
+            comments: List of text comments to analyze
+            **kwargs: Additional parameters
+            
+        Returns:
+            List of dictionaries containing analysis results
+        """
+        return self.analyze_batch(comments, **kwargs)
+    
     def analyze_batch(self, comments: List[str], **kwargs) -> List[Dict]:
         """
         Analyze a batch of comments using simple rule-based approach
